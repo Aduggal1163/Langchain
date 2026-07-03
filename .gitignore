@@ -45,3 +45,5 @@ htmlcov/
 
 # UV
 .python-version
+
+output_parser
