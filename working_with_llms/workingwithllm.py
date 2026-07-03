@@ -5,8 +5,6 @@ Multiple providers, configuration, streaming and cost optimization
 from dotenv import load_dotenv
 import os
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -66,6 +64,7 @@ def demo_messages():
         SystemMessage(content="You are a pirate so always answer me like a pirate."),
         HumanMessage(content="Whats your goal today")
     ]
+
     response = model.invoke(messages)
 
     print(f"response from pirate : {response.content} \n \n")
@@ -77,7 +76,36 @@ def demo_messages():
 
     print(f"continuing message from pirate: {response.content}")
 
+def exercise_multi_model():
+    """
+        Create a function that
+        Takes a question and list of model names
+        Gets response from all models
+        Return dict {model_name: response}
+    """
+
+    models = {
+        "gpt-4o-mini" : init_chat_model(
+        model='gpt-4o-mini',
+        model_provider='openai',
+        temperature=0
+        ),
+        "claude-sonnet-4-5-20250929": init_chat_model(
+            model='claude-sonnet-4-5-20250929',
+            model_provider='anthropic',
+            temperature=0
+        ),
+    }
+    dict = {}
+    prompt = "tell me a joke"
+    for model_name,model in models.items():
+        response = model.invoke(prompt)
+        dict[model_name] = response.content
+    print(dict)
+
+
 if __name__ == '__main__':
     # demo_chat_init_model()
     # demo_model_compare()
-    demo_messages()
+    # demo_messages()
+    exercise_multi_model()
