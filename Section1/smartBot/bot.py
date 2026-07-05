@@ -16,7 +16,7 @@ load_dotenv()
 #----Langsmith Configuration------
 if os.getenv("LANGSMITH_API_KEY"):
     os.environ["LANGSMITH_TRACING"] = "true"
-    os.environ.setdefault("LANGSMITH_PROJECT_NAME","SMART Q/A BOT") # setdefault() means "If this variable doesn't exist, create it. Otherwise leave it unchanged."
+    os.environ.setdefault("LANGSMITH_PROJECT","SMART Q/A BOT") # setdefault() means "If this variable doesn't exist, create it. Otherwise leave it unchanged."
     print(f"LangSmith is configured -- Project : {os.getenv('LANGSMITH_PROJECT_NAME')}")
 else:
     print("Issue in Langsmith configurations")
