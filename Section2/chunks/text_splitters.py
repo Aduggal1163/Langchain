@@ -3,7 +3,7 @@ Text splitters and chunking stretergies
 Optimizing chunking for RAG 
 """
 from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter,CharacterTextSplitter,TokenTextSplitter,MarkdownHeaderTextSplitter,Language
+from langchain_text_splitters import RecursiveCharacterTextSplitter,MarkdownHeaderTextSplitter,Language
 from dotenv import load_dotenv
 load_dotenv()
 
