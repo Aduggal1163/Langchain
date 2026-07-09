@@ -181,9 +181,39 @@ def demo_debugging():
     print("\n===== FINAL RESULT =====")
     print(final_result)
 
+def demo_email():
+    model = init_chat_model(
+        model='gpt-4o-mini',
+        model_provider='openai',
+        temperature=0.7
+    )
+
+    generation_prompt = ChatPromptTemplate.from_template("Generate a professional email using the following {text}")
+    summary_prompt = ChatPromptTemplate.from_template("summarize the entire generated email in one sentence {text}")
+    
+    text = """
+    "name": "John",
+    "topic": "Annual Leave",
+    "reason": "Family vacation",
+    "days": 5
+    """
+
+    chain = generation_prompt | model | StrOutputParser()
+    chain_summary = summary_prompt | model | StrOutputParser()
+
+    response = chain.invoke({'text':text})
+
+    summary_response = chain_summary.invoke({'text':response})
+
+    print("="*50,"Generating email","="*50) 
+    print(f"{response}")
+    print("="*50,"Generating summary","="*50) 
+    print(f"{summary_response}")
+
 if __name__ == '__main__':
     # simple_runnable()
     # parallel_runnable()
     # passthrough_runnable()
     # branch_runnable()
-    demo_debugging()
+    # demo_debugging()
+    demo_email()
