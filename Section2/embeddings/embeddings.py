@@ -83,10 +83,29 @@ def free_models():
     )
     vector = embeddings.embed_query("What is LangChain?")
     print(len(vector))
+def exercise():
+    docs = [
+    "Python is a programming language.",
+    "Machine Learning is a subset of Artificial Intelligence.",
+    "Deep Learning uses neural networks.",
+    "LangChain helps build LLM applications.",
+    "Cats are common household pets."
+    ]
+    embedding_docs = embeddings.embed_documents(docs)
+    print(f"Total document embedding is : {len(embedding_docs)}")
+    print(f"Length of one embedding is : {len(embedding_docs[0])}")
+    for i,emb in enumerate(embedding_docs):
+        print(f"for {i} first ten values are {emb[:10]}")
+    query = 'Tell me about python'
+    embedding_query = embeddings.embed_query(query)
+    print(f"Total query embedding is : {len(embedding_query)}")
+    print(f"First ten values are {embedding_query[:10]}")
+    print({len(embedding_docs[0]) == len(embedding_query)})
+
 if __name__ =='__main__':
     # simple_query()
     # free_models()
     # basic_embedding()
     # batch_embedding()
-    similarity_search()
-
+    # similarity_search()
+    exercise()
