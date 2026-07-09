@@ -45,3 +45,6 @@ htmlcov/
 
 # UV
 .python-version
+
+#chroma db
+chroma_db
