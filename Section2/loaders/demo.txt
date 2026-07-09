@@ -1,3 +1,6 @@
 LangChain is a framework for building LLM applications.
-
 It provides document loaders, text splitters, vector stores, and retrievers.
+Artificial Intelligence enables machines to perform tasks that usually require human intelligence.
+Machine Learning is a subset of Artificial Intelligence.
+Deep Learning is a subset of Machine Learning and uses neural networks.
+Python is one of the most popular languages for AI development.

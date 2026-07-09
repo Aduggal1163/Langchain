@@ -1,9 +1,9 @@
-# import os
-# import tempfile
-# from pathlib import Path
-from bs4 import BeautifulSoup
 from langchain_core.documents import Document
 from langchain_community.document_loaders import TextLoader,WebBaseLoader,PyPDFLoader
+from langchain.chat_models import init_chat_model
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableParallel
 from dotenv import load_dotenv
 load_dotenv()
 def load_text_file():
@@ -57,8 +57,31 @@ def pdf_loader(pdf_path : str):
         print(f"\nDocument metadata : {doc.metadata}")
 #------------
 #------------
+def exercise():
+    loader = TextLoader('demo.txt')
+    doc = loader.load()
+    print(f"\nLength of document is : {len(doc)}\n")
+    print(f"Content is : {doc[0].page_content}\n")
+    print(f"Metadata is : {doc[0].metadata}\n")
+    model = init_chat_model('gpt-4o-mini',temperature = 1)
+    summary_prompt = ChatPromptTemplate.from_template("Generate me a summary of {text}")
+    keyword_prompt = ChatPromptTemplate.from_template("Give me 5 keywords in bullet points from {text}")
+    analyzed_chain = RunnableParallel(
+    summary_chain = summary_prompt | model | StrOutputParser(),
+    keyword_chain = keyword_prompt | model | StrOutputParser()
+    )
+    content = doc[0].page_content
+    # print(type(content))
+    result = analyzed_chain.invoke({'text':content})
+    print("="*50,"Generating summary","="*50) 
+    print(result['summary_chain'])
+    print("="*50,"Generating keywords","="*50) 
+    print(result['keyword_chain'])
+#------------
+#------------
 if __name__ == '__main__':
-    load_text_file()
-    web_loader()
-    doc_structure()
-    pdf_loader("langchain.pdf")
+    # load_text_file()
+    # web_loader()
+    # doc_structure()
+    # pdf_loader("langchain.pdf")
+    exercise()
