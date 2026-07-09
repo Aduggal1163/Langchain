@@ -4,6 +4,10 @@ Optimizing chunking for RAG
 """
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter,MarkdownHeaderTextSplitter,Language
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.chat_models import init_chat_model
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableParallel
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -164,9 +168,39 @@ def document_splitter():
     print(f"First chunk ending: {chunks[0].page_content[-50:]}")
     print(f"Second chunk starting: {chunks[0].page_content[:80]}")
 
+# def exercise():
+def exercise():
+    loader = PyPDFLoader('langchain.pdf')
+    docs = loader.load()
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size = 200,
+        chunk_overlap = 30,
+    )
+    document = splitter.split_documents(docs)
+    model = init_chat_model(
+        model='gpt-4o-mini',
+        model_provider='openai',
+        temperature=0.7
+    )
+    summary_prompt = ChatPromptTemplate.from_template("Generate me one line summary of: {text}")
+    category_prompt = ChatPromptTemplate.from_template("Also choose the category from the following options Artificial Intelligence,Machine Learning, Deep Learning,Python,Other {text}")
+    analyzed_chain = RunnableParallel(
+        summary = summary_prompt | model | StrOutputParser(),
+        category = category_prompt | model | StrOutputParser()
+    )
+        
+    print(f"\nTotal number of chunks are: {len(document)}")
+    for i,doc in enumerate(document,start=1):
+        print("="*50,f"chunk {i}","="*50)
+        print(f"\ncontent is: {doc.page_content}\nmetadata is: {doc.metadata}")
+        response = analyzed_chain.invoke({'text':doc.page_content})
+        print(f"\n summary for this chunks is: {response['summary']}")
+        print(f"\nCategory for this chunk is: {response['category']}")
+
 if __name__ == '__main__':
-    recursive_splitter()
-    overlap_importance()
-    markdown_splitter()
-    code_splitter()
-    document_splitter()
+    # recursive_splitter()
+    # overlap_importance()
+    # markdown_splitter()
+    # code_splitter()
+    # document_splitter()
+    exercise()

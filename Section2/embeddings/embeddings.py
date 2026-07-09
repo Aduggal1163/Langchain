@@ -70,7 +70,6 @@ def similarity_search():
         print(f"Document : {doc}")
         print(f"Similarity: {score:.4f}")
         print("-" * 40)
-# ---------FREE------------
 def free_models():
     from langchain_community.embeddings import HuggingFaceEmbeddings
     embeddings = HuggingFaceEmbeddings(model = "BAAI/bge-small-en-v1.5")
@@ -90,3 +89,4 @@ if __name__ =='__main__':
     # basic_embedding()
     # batch_embedding()
     similarity_search()
+
