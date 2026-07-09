@@ -89,11 +89,12 @@ def filtering_search():
         persist_directory='./chroma_db'
     )
     text = "What databases are available"
-    result = vector_store.similarity_search(text);
+    result = vector_store.similarity_search(text)
     print("="*100)
     print(f"===+Vector Store created {vector_store._collection.count()} and perssisted+======")
     for i,res in enumerate(result,start=1):
         print(f"{i} result is {res.page_content}")
+
     print("="*20,"With filtering","="*25)
 
     filtering_criteria = {"topic":"vector databases"}
@@ -166,7 +167,7 @@ def as_retriver():
     for i,mdoc in enumerate(mmr_docs,start=1):
         print(f"Result {i} content {mdoc.page_content}")
 
-def exercise():
+def exercise1():
     """
     Create a complete vector setup that:
     takes a list of strings
@@ -278,6 +279,66 @@ def exercise():
     for i,res in enumerate(result,start=1):
         print(f"for result {i} result is : {res.page_content}")
 
+def exercise2():
+    """
+    You have a collection of documents. Store them in a Chroma vector database and perform a similarity search.
+    """
+    docs = [
+    Document(
+        page_content="Python is a programming language used for AI and web development.",
+        metadata={"topic": "Python"}
+    ),
+    Document(
+        page_content="Machine Learning enables systems to learn from data.",
+        metadata={"topic": "Machine Learning"}
+    ),
+    Document(
+        page_content="Deep Learning is based on neural networks.",
+        metadata={"topic": "Deep Learning"}
+    ),
+    Document(
+        page_content="LangChain provides tools for building LLM applications.",
+        metadata={"topic": "LangChain"}
+    ),
+    Document(
+        page_content="Cricket is a popular sport in India.",
+        metadata={"topic": "Sports"}
+    )
+    ]
+    vector_store = Chroma.from_documents(
+        documents=docs,
+        embedding=embeddings,
+        persist_directory='./chroma_db'
+    )
+    
+    
+    mmr_retriver = vector_store.as_retriever(
+        search_type = 'mmr',
+        search_kwargs = {'k':3,'fetch_k':5}
+    )
+
+    query = "Which sport is famous in India?"
+    
+    similarity_docs = vector_store.similarity_search_with_score(
+        query=query,
+        k=3
+    )
+
+    mmr_docs = mmr_retriver.invoke(query)
+
+    print(f"Vector store total document(s) are {vector_store._collection.count()}")
+
+    for i,(doc,score) in enumerate(similarity_docs,start=1):
+        print("="*50)
+        print(f"document {i}")
+        print(f"content: {doc.page_content}")
+        print(f"metadata: {doc.metadata}")
+        print(f"score: {score:.4f}")
+
+    print("="*101)
+    for i,mdoc in enumerate(mmr_docs,start=1):
+        print(f"for {i} conetent is : {mdoc.page_content}")
+        print(f"for {i} metadata is : {mdoc.metadata}")
 
 if __name__ == '__main__':
     # chroma_basics()
@@ -285,4 +346,5 @@ if __name__ == '__main__':
     # filtering_search()
     # persist_Chroma()
     # as_retriver()
-    exercise()
+    # exercise1()
+    exercise2()
