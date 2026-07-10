@@ -48,3 +48,6 @@ htmlcov/
 
 #chroma db
 chroma_db
+
+#rag db
+rag_db
