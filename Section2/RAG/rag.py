@@ -1,8 +1,7 @@
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableParallel,RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
-from langchain_openai import ChatOpenAI
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -211,8 +210,53 @@ def rag_with_structure():
     print(f"\nsources_used: {result.sources_used}")
     print(f"\nfollowup_question: {result.followup_question}")
 
+#Build a document QA system
+def document_qa():
+    """
+    Build a complete document QA system that:
+    Takes a text document as input
+    Splits and embeds it
+    Allows multiple questions
+    Returns ans with confidence score
+    """
+
+    class QAResponse(BaseModel):
+        answer : str = Field(description="Answer to your question")
+        confidence : str = Field(description="High,Med or Low")
+    
+    vector_store = create_kb()
+    retriever = vector_store.as_retriever(
+        search_kwargs = {'k':3} 
+    )
+    structured_llm = llm.with_structured_output(QAResponse)
+
+    def format_doc(docs):
+        return '\n\n'.join([doc.page_content for doc in docs])
+    
+    prompt = ChatPromptTemplate.from_template(
+        """
+        Answer the following question based on the context
+        context : {context}
+        question : {question}
+
+        give ans with the proper structural format
+        if you dont know answer please type i dont have prior information regarding this
+        """
+    )
+
+    rag_chain = {'context':retriever |format_doc, 'question':RunnablePassthrough()} | prompt | structured_llm
+
+    while True:
+        question = input("Ask Question: ")
+        if question == 'exit':
+           break
+        response = rag_chain.invoke(question)
+        print("Confidence: ",response.confidence)
+        print("Answer: ",response.answer)
+
 if __name__ == '__main__':
     # basic_rag()
     # rag_sources()
     # rag_fallback()
-    rag_with_structure()
+    # rag_with_structure()
+    document_qa()
