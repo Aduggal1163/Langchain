@@ -1,13 +1,10 @@
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableParallel,RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
-from langchain_openai import ChatOpenAI
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from pydantic import BaseModel,Field
-from typing import List
 from langchain.chat_models import init_chat_model
 from dotenv import load_dotenv
 
@@ -110,7 +107,6 @@ TECH_DOCS = [
         }
     ),
 ]
-
 
 def create_base_vectorStore():
     """Create a basic vector store for demos"""
