@@ -1,27 +1,39 @@
 """
 Conversation Memory in LangChain
+
 modern approaches to maintaining conversation context
+
 """
 
 from langchain.chat_models import init_chat_model
+
 from langchain_core.prompts import ChatPromptTemplate,MessagesPlaceholder
+
 from langchain_core.messages import HumanMessage,SystemMessage,AIMessage,trim_messages
+
 from langchain_core.output_parsers import StrOutputParser
+
 from typing import Dict
+
 from dotenv import load_dotenv
 
 from langchain_core.chat_history import InMemoryChatMessageHistory,BaseChatMessageHistory
+
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
 load_dotenv()
+
 llm = init_chat_model('gpt-4o-mini',temperature = 0.3)
 
 def basic_memory():
     """Basic conversation with RunnableWithMessageHistory"""
 
-    print("="*50, "Basic conversation memory","="*50)
-    
+    print("="*50)
+    print("Basic conversation memory")
+    print("="*50)
+
     #prompt with history placeholder
+
     prompt = ChatPromptTemplate.from_messages([
         ('system','You are helpful assistant. Be concise'),
         MessagesPlaceholder(variable_name='history'),
@@ -31,6 +43,7 @@ def basic_memory():
     chain = prompt | llm | StrOutputParser()
     
     #Session store
+
     store: Dict[str,InMemoryChatMessageHistory] = {}
 
     def get_session_history(session_id : str)->BaseChatMessageHistory:
@@ -48,11 +61,13 @@ def basic_memory():
     )
 
     #Configured for this session
+
     config = {
         'configurable': {'session_id':'user_123'}
     }
 
     #conversation
+
     messages = [
         "hi my name is abhishek duggal",
         "im learning Langchain",
@@ -60,6 +75,7 @@ def basic_memory():
     ]
 
     print("\n conversation")
+    
     for msg in messages:
         print(f"User: {msg}")
         ans = chain_with_history.invoke({'input':msg},config=config)
@@ -136,11 +152,14 @@ def multi_session():
 
 def message_trimming():
     """Trim message to fit context window"""
+
     print("="*60)
     print("Message Trimming")
     print("Keep message within your token limit")
     print("="*60)
+    
     conversation = [
+
     SystemMessage(
         content="You are a helpful AI assistant. Answer concisely."
     ),
@@ -167,9 +186,10 @@ def message_trimming():
     AIMessage(content="Conversation Memory allows an LLM to remember previous interactions."),
 
     HumanMessage(content="What's my name?"),
-]
+    ]
 
     print(f"Original length of conversation: {len(conversation)} message(s)")
+
     trimmed = trim_messages(
         messages=conversation,
         max_tokens=80,
@@ -178,7 +198,9 @@ def message_trimming():
         include_system=True,
         allow_partial=False
     )
+
     print(f"Trimmed convo: {len(trimmed)} message(s)")
+
     for msg in trimmed:
         print(f"{type(msg).__name__}: {msg.content}")
 
@@ -234,8 +256,153 @@ def windowed_memory():
             role = 'human' if isinstance(hm,HumanMessage) else 'AI'
             print(f"role: {role} and content is: {hm.content}")
 
+def summary_memory():
+
+    """
+    Implement conversational summary
+    """
+    
+    print("="*60)
+    print("Summarize older message to save tokens")
+    print("="*60)
+    
+    conversation = """
+    User introduced themselves as Abhi, an AI engineer from Seattle.
+    
+    User asked about LangChain and learned it's a framework for LLM apps.
+    
+    User asked about memory types: buffer, window, and summary memory.
+    
+    User expressed interest in building a chatbot with persistent memory.
+    """
+    
+    prompt = ChatPromptTemplate.from_messages(
+        [('system',"""You are a helpful AI Assitant.Here's the summary of the conversation
+        {summary}
+        Use this context to maintain continuitys"""),
+        MessagesPlaceholder(variable_name='history'),
+        ('human','{text}')]
+    )
+    
+    chain = prompt | llm | StrOutputParser()
+    
+    print(f"\n using summary so far")
+    print(f"\n {conversation[:100]}....")
+    
+    res=chain.invoke({
+        'summary':conversation,
+        'history':[],
+        'text':"What should i build next based on the convo"
+    })
+    
+    print(res)
+    print('\n---generating summary----')
+    
+    summary_prompt = ChatPromptTemplate.from_template(
+        """
+            Summarize this in 2 lines maintaing the user's key facts:
+            {convo}
+        """
+    )
+    
+    summary_chain = summary_prompt | llm |StrOutputParser()
+    
+    updated_summary = summary_chain.invoke({
+        'convo': conversation + f"\n Assistant: {res}"
+    })
+    
+    print("\n Updated summary: ")
+
+    print(updated_summary)
+
+def exercise():
+    """
+     Build a chatbot with
+     Persistent memory (SQLite)
+     Automatic summary after 10 messages
+     User pref tracking
+    """
+
+    print("="*60)
+    print("Persistent memory chatbot")
+    print("="*60)
+    
+    from langchain_community.chat_message_histories import SQLChatMessageHistory
+    import os
+
+    #use sqlite for persistent
+    db_path = "./chat_history.db"
+    
+    def get_session_history(session_id : str)->BaseChatMessageHistory:
+
+        return SQLChatMessageHistory(
+            session_id=session_id,
+
+            connection=f"sqlite:///{db_path}"
+
+        )
+    
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ('system','you are a helpful asssistent also remember users prefrence'),
+
+            MessagesPlaceholder(variable_name='history'),
+            
+            ('human','{input}')
+        ]
+    )
+
+    chain = prompt | llm | StrOutputParser()
+
+    chain_with_history = RunnableWithMessageHistory(
+        chain,
+        
+        get_session_history,
+        
+        input_messages_key='input',
+        
+        history_messages_key='history'
+    )
+
+    config = {
+        'configurable':{
+            'session_id':'persistent_user'
+        }
+    }
+
+    print('\nPersistent Memory Chatbot; ')
+
+    print("Message Saved to SQLite database\n")
+
+    #Test Conversations
+
+    messages = [
+        "Remember i love Dark themes",
+        
+        "What themes do i prefer?"
+    ]
+
+    for msg in messages:
+
+        print(f"User: {msg}")
+        
+        res = chain_with_history.invoke({'input':msg},config=config)
+        
+        print(f"AI : {res}\n")
+
+    print(f"Database Created: {db_path}")
+
+    print("Message persist across restarts!")
+
+    #cleanup for demo
+
+    if os.path.exists(db_path):
+        os.remove(db_path)
+
 if __name__ == '__main__':
     # basic_memory()
     # multi_session()
     # message_trimming()
-    windowed_memory()
+    # windowed_memory()a
+    # summary_memory()
+    exercise()
