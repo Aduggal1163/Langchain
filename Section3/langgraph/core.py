@@ -115,7 +115,8 @@ def message_state():
     for msg in result['messages']:
         role = 'Human' if isinstance(msg,HumanMessage) else 'AI'
         print(role,": ",msg.content)
-    
+
+
 
 
 if __name__ == '__main__':
