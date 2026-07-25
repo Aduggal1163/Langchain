@@ -326,5 +326,23 @@ def working_hierarchical_routing():
         print(f"Final ans is : {result['final_ans']}")
         print("-"*40)
 
+def trace():
+    """Show full trace through the hierarchy."""
+    app = create_hierarchical_system()
+    print("FULL HIERARCHICAL TRACE\n")
+    inputs = {
+            'messages':[
+                HumanMessage(content='Research the impact of ai agents on software dev production')
+            ],
+            "final_ans":"",
+            "department":""
+        }
+
+    for r in app.stream(inputs,stream_mode='updates'):
+        print("="*63)
+        print(r)
+
 if __name__ == '__main__':
     working_hierarchical_routing()
+    print('\n\n')
+    trace()
