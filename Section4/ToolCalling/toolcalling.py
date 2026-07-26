@@ -152,7 +152,7 @@ def create_weather_tool_agent():
     response = app.invoke(
         {
             'messages':[
-                HumanMessage(content='Tell me todays temp (in c) and capital of Argentina')
+                HumanMessage(content='Tell me todays temp (in c) and q of Argentina')
             ]
         }
     )
