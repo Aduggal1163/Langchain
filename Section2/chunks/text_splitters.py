@@ -191,7 +191,7 @@ def exercise():
         
     print(f"\nTotal number of chunks are: {len(document)}")
     for i,doc in enumerate(document,start=1):
-        print("="*50,f"chunk {i}","="*50)
+        print("="*50,f"chunk {i}","="*50)   
         print(f"\ncontent is: {doc.page_content}\nmetadata is: {doc.metadata}")
         response = analyzed_chain.invoke({'text':doc.page_content})
         print(f"\n summary for this chunks is: {response['summary']}")
